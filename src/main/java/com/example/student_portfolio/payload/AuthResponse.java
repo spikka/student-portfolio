@@ -1,2 +1,11 @@
-package com.example.student_portfolio.payload;public class AuthResponse {
+// payload/AuthResponse.java
+package com.example.student_portfolio.payload;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class AuthResponse {
+    private String token;
 }
