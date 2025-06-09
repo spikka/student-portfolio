@@ -20,6 +20,10 @@ public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    public User(Long id) {
+        this.id = id;
+    }
+
     @Column(nullable=false, unique=true)
     private String email;
 
