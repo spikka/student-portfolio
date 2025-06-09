@@ -1,7 +1,8 @@
 package com.example.student_portfolio.service.impl;
 
 import com.example.student_portfolio.model.Comment;
-import com.example.student_portfolio.payload.*;
+import com.example.student_portfolio.payload.CommentDto;
+import com.example.student_portfolio.payload.PortfolioDto;
 import com.example.student_portfolio.repository.*;
 import com.example.student_portfolio.service.PortfolioService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         // 1) Список достижений
         var achievements = achievementRepository.findAllByStudentId(studentId);
 
-        // 2) Средний рейтинг
+        // 2) Средний рейтинг по всем достижениям студента
         Double avg = ratingRepository.findAverageByStudentId(studentId);
         if (avg == null) avg = 0.0;
 
@@ -33,7 +34,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         List<Comment> recent = commentRepository
                 .findTop5ByAchievementStudentIdOrderByCreatedAtDesc(studentId);
 
-        // Маппим комменты в DTO
+        // Маппинг Comment → CommentDto
         List<CommentDto> commentDtos = recent.stream().map(c -> {
             var dto = new CommentDto();
             dto.setId(c.getId());
@@ -44,7 +45,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             return dto;
         }).collect(Collectors.toList());
 
-        // Собираем портфолио
+        // Собираем DTO портфолио
         PortfolioDto portfolio = new PortfolioDto();
         portfolio.setAchievements(achievements);
         portfolio.setAverageRating(avg);

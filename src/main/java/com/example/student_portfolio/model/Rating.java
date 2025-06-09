@@ -1,6 +1,11 @@
 package com.example.student_portfolio.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -8,6 +13,11 @@ import java.time.LocalDateTime;
         name = "ratings",
         uniqueConstraints = @UniqueConstraint(columnNames = {"achievement_id", "author_id"})
 )
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
