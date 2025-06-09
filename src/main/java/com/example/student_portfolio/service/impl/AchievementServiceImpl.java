@@ -1,11 +1,15 @@
 package com.example.student_portfolio.service.impl;
 
 import com.example.student_portfolio.model.Achievement;
+import com.example.student_portfolio.model.AchievementType;
 import com.example.student_portfolio.model.User;
 import com.example.student_portfolio.repository.AchievementRepository;
 import com.example.student_portfolio.repository.UserRepository;
 import com.example.student_portfolio.service.AchievementService;
+import com.example.student_portfolio.specification.AchievementSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -94,5 +98,86 @@ public class AchievementServiceImpl implements AchievementService {
     @Transactional(readOnly = true)
     public List<Achievement> getAll() {
         return achievementRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Achievement> search(
+            AchievementType type,
+            String tag,
+            String faculty,
+            String group,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            String sort
+    ) {
+        Specification<Achievement> spec = (root, query, cb) -> cb.conjunction();
+
+        if (type != null)      spec = spec.and(AchievementSpecification.hasType(type));
+        if (tag != null)       spec = spec.and(AchievementSpecification.hasTag(tag));
+        if (faculty != null)   spec = spec.and(AchievementSpecification.hasFaculty(faculty));
+        if (group != null)     spec = spec.and(AchievementSpecification.hasGroup(group));
+        if (dateFrom != null)  spec = spec.and(AchievementSpecification.dateAfterOrEq(dateFrom));
+        if (dateTo != null)    spec = spec.and(AchievementSpecification.dateBeforeOrEq(dateTo));
+
+        Sort sortObj = "popularity".equalsIgnoreCase(sort)
+                ? Sort.by(Sort.Direction.DESC, "ratings.size")
+                : Sort.by(Sort.Direction.DESC, "date");
+
+        return achievementRepository.findAll(spec, sortObj);
+    }
+
+    private Specification<Achievement> buildSpec(
+            AchievementType type,
+            String tag,
+            String faculty,
+            String group,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
+        Specification<Achievement> spec = (root, query, cb) -> cb.conjunction();
+
+        if (type != null)    spec = spec.and(AchievementSpecification.hasType(type));
+        if (tag != null)     spec = spec.and(AchievementSpecification.hasTag(tag));
+        if (faculty != null) spec = spec.and(AchievementSpecification.hasFaculty(faculty));
+        if (group != null)   spec = spec.and(AchievementSpecification.hasGroup(group));
+        if (dateFrom != null) spec = spec.and(AchievementSpecification.dateAfterOrEq(dateFrom));
+        if (dateTo != null)   spec = spec.and(AchievementSpecification.dateBeforeOrEq(dateTo));
+
+        return spec;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Achievement> filterAchievements(
+            AchievementType type,
+            String tag,
+            String faculty,
+            String group,
+            LocalDate dateFrom,
+            LocalDate dateTo
+    ) {
+        Specification<Achievement> spec = buildSpec(type, tag, faculty, group, dateFrom, dateTo);
+        return achievementRepository.findAll(spec);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Achievement> searchAchievements(
+            AchievementType type,
+            String tag,
+            String faculty,
+            String group,
+            LocalDate dateFrom,
+            LocalDate dateTo,
+            String sort
+    ) {
+        Specification<Achievement> spec = buildSpec(type, tag, faculty, group, dateFrom, dateTo);
+
+        Sort sortObj = "popularity".equalsIgnoreCase(sort)
+                ? Sort.by(Sort.Direction.DESC, "ratings.size")
+                : Sort.by(Sort.Direction.DESC, "date");
+
+        return achievementRepository.findAll(spec, sortObj);
     }
 }

@@ -1,12 +1,14 @@
 package com.example.student_portfolio.controller;
 
 import com.example.student_portfolio.model.Achievement;
+import com.example.student_portfolio.model.AchievementType;
 import com.example.student_portfolio.model.User;
 import com.example.student_portfolio.payload.AchievementDto;
 import com.example.student_portfolio.service.AchievementService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -119,5 +123,33 @@ public class AchievementController {
         throw ex;
     }
 
-
+    /**
+     * Поиск и фильтрация:
+     * @param type     — тип достижения
+     * @param tag      — текстовый тег (partial match)
+     * @param faculty  — факультет студента
+     * @param group    — группа студента
+     * @param dateFrom — с даты (yyyy-MM-dd)
+     * @param dateTo   — по дату (yyyy-MM-dd)
+     * @param sort     — "date" или "popularity"
+     */
+    @GetMapping
+    public ResponseEntity<List<Achievement>> search(
+            @RequestParam(required = false) AchievementType type,
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String faculty,
+            @RequestParam(name = "group", required = false) String group,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dateFrom,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate dateTo,
+            @RequestParam(defaultValue = "date") String sort
+    ) {
+        List<Achievement> list = achievementService.search(
+                type, tag, faculty, group, dateFrom, dateTo, sort
+        );
+        return ResponseEntity.ok(list);
+    }
 }
