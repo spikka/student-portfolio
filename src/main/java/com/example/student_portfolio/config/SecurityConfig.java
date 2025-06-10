@@ -26,11 +26,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/portfolio/**").permitAll()
+                        // все /auth/** открыты
+                        .requestMatchers("/auth/**").permitAll()
+                        // пример: только TEACHER может создавать комментарии
+                        .requestMatchers("/achievements/*/comments/**").hasRole("TEACHER")
+                        // пример: только ADMIN имеет доступ к /admin/**
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // все остальные запросы требуют аутентификации
                         .anyRequest().authenticated()
                 )
-                // регистрируем наш DaoAuthenticationProvider
-                .authenticationProvider(daoAuthenticationProvider())
+                // регистрируем провайдер с UserDetailsService, чтобы проверить пароль и роли
+                .authenticationProvider(daoAuthProvider())
                 .addFilterBefore(jwtFilter,
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
@@ -41,6 +47,14 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthProvider() {
+        var provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;

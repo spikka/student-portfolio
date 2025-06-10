@@ -2,13 +2,13 @@
 package com.example.student_portfolio.model;
 
 import jakarta.persistence.*;
-import com.example.student_portfolio.model.Visibility;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -50,5 +50,17 @@ public class User {
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private List<Rating> ratings;
 
-    // геттеры/сеттеры…
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>();
+
+    // при регистрации по умолчанию:
+    public void addDefaultRole() {
+        this.roles.add(Role.STUDENT);
+    }
 }

@@ -1,5 +1,13 @@
 -- V1__init_schema.sql
 
+-- 0) Создаём enum для ролей
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role_enum') THEN
+    CREATE TYPE role_enum AS ENUM ('STUDENT','TEACHER','ADMIN');
+  END IF;
+END$$;
+
 -- 1) Пользователи
 CREATE TABLE users (
   id          BIGSERIAL    PRIMARY KEY,
@@ -62,9 +70,18 @@ CREATE TABLE ratings (
   CONSTRAINT uq_ratings UNIQUE (achievement_id, author_id)
 );
 
--- 6) Индексы для ускорения выборок
+-- 6) Таблица user_roles для хранения ролей
+CREATE TABLE user_roles (
+  user_id BIGINT NOT NULL
+    REFERENCES users(id)
+    ON DELETE CASCADE,
+  role    role_enum NOT NULL
+);
+
+-- 7) Индексы для ускорения выборок
 CREATE INDEX idx_achievements_student   ON achievements(student_id);
 CREATE INDEX idx_comments_achievement   ON comments(achievement_id);
 CREATE INDEX idx_comments_author        ON comments(author_id);
 CREATE INDEX idx_ratings_achievement    ON ratings(achievement_id);
 CREATE INDEX idx_ratings_author         ON ratings(author_id);
+CREATE INDEX idx_user_roles_user        ON user_roles(user_id);
