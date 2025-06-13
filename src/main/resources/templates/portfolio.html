@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolio</title>
+</head>
+<body>
+<h1>Портфолио</h1>
+
+<section th:if="${portfolio.achievements != null and !#lists.isEmpty(portfolio.achievements)}">
+    <h2>Достижения</h2>
+    <ul>
+        <li th:each="ach : ${portfolio.achievements}">
+            <strong th:text="${ach.title}">Название</strong>
+            <span th:if="${ach.description}"> - <span th:text="${ach.description}">Описание</span></span>
+        </li>
+    </ul>
+</section>
+
+<section th:if="${portfolio.averageRating != null and portfolio.averageRating > 0}">
+    <h2>Средний рейтинг</h2>
+    <p th:text="${#numbers.formatDecimal(portfolio.averageRating, 1, 2)}">0</p>
+</section>
+
+<section th:if="${portfolio.recentComments != null and !#lists.isEmpty(portfolio.recentComments)}">
+    <h2>Последние комментарии</h2>
+    <ul>
+        <li th:each="c : ${portfolio.recentComments}">
+            <span th:text="${c.text}">Текст комментария</span>
+            <span th:if="${c.createdAt}">
+                (<span th:text="${#temporals.format(c.createdAt, 'yyyy-MM-dd HH:mm')}">дата</span>)
+            </span>
+        </li>
+    </ul>
+</section>
+</body>
+</html>
